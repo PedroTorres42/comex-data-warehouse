@@ -1,0 +1,41 @@
+﻿id,nome,codigo_iso,bloco_id
+1,Brasil,BRA,1.0
+2,Argentina,ARG,1.0
+3,Paraguai,PRY,1.0
+4,Uruguai,URY,1.0
+5,Alemanha,DEU,2.0
+6,França,FRA,2.0
+7,Itália,ITA,2.0
+8,Espanha,ESP,2.0
+9,Portugal,PRT,2.0
+10,Países Baixos,NLD,2.0
+11,Bélgica,BEL,2.0
+12,Estados Unidos,USA,3.0
+13,Canadá,CAN,3.0
+14,México,MEX,3.0
+15,China,CHN,5.0
+16,Japão,JPN,5.0
+17,Coreia do Sul,KOR,5.0
+18,Índia,IND,6.0
+19,Rússia,RUS,6.0
+20,África do Sul,ZAF,6.0
+21,Chile,CHL,7.0
+22,Peru,PER,7.0
+23,Colômbia,COL,7.0
+24,Bolívia,BOL,7.0
+25,Emirados Árabes Unidos,ARE,8.0
+26,Arábia Saudita,SAU,8.0
+27,Egito,EGY,8.0
+28,Austrália,AUS,5.0
+29,Nova Zelândia,NZL,5.0
+30,Suíça,CHE,10.0
+31,Noruega,NOR,10.0
+32,Suécia,SWE,2.0
+33,Dinamarca,DNK,2.0
+34,Turquia,TUR,
+35,Singapura,SGP,4.0
+36,Tailândia,THA,4.0
+37,Vietnã,VNM,4.0
+38,Indonésia,IDN,4.0
+39,Malásia,MYS,4.0
+40,Nigéria,NGA,9.0
