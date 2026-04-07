@@ -1,0 +1,41 @@
+sk_pais_origem,id_pais_origem,nome_pais_origem,codigo_iso_pais_origem,bloco_economico_pais_origem
+1,1,Brasil,BRA,Mercosul
+2,6,França,FRA,União Europeia
+3,11,Bélgica,BEL,União Europeia
+4,16,Japão,JPN,APEC
+5,21,Chile,CHL,Comunidade Andina
+6,26,Arábia Saudita,SAU,Liga Árabe
+7,31,Noruega,NOR,EFTA
+8,36,Tailândia,THA,ASEAN
+9,4,Uruguai,URY,Mercosul
+10,9,Portugal,PRT,União Europeia
+11,14,México,MEX,USMCA
+12,19,Rússia,RUS,BRICS
+13,24,Bolívia,BOL,Comunidade Andina
+14,29,Nova Zelândia,NZL,APEC
+15,34,Turquia,TUR,
+16,39,Malásia,MYS,ASEAN
+17,7,Itália,ITA,União Europeia
+18,12,Estados Unidos,USA,USMCA
+19,17,Coreia do Sul,KOR,APEC
+20,22,Peru,PER,Comunidade Andina
+21,27,Egito,EGY,Liga Árabe
+22,32,Suécia,SWE,União Europeia
+23,37,Vietnã,VNM,ASEAN
+24,2,Argentina,ARG,Mercosul
+25,10,Países Baixos,NLD,União Europeia
+26,15,China,CHN,APEC
+27,20,África do Sul,ZAF,BRICS
+28,25,Emirados Árabes Unidos,ARE,Liga Árabe
+29,30,Suíça,CHE,EFTA
+30,35,Singapura,SGP,ASEAN
+31,40,Nigéria,NGA,União Africana
+32,5,Alemanha,DEU,União Europeia
+33,13,Canadá,CAN,USMCA
+34,18,Índia,IND,BRICS
+35,23,Colômbia,COL,Comunidade Andina
+36,28,Austrália,AUS,APEC
+37,33,Dinamarca,DNK,União Europeia
+38,38,Indonésia,IDN,ASEAN
+39,3,Paraguai,PRY,Mercosul
+40,8,Espanha,ESP,União Europeia

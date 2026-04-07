@@ -1,14 +1,18 @@
 import mysql.connector
 import pandas as pd
 import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+BRONZE_DIR = BASE_DIR / "data" / "bronze"
 
 # Criar pasta bronze
-os.makedirs("../data/bronze", exist_ok=True)
+os.makedirs(BRONZE_DIR, exist_ok=True)
 
 # Credenciais via variaveis de ambiente
 DB_USER = os.getenv("DB_USER", "consulta")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST", "mysql-3fa4fc41-giga-d6d4.l.aivencloud.com")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "") 
+DB_HOST = os.getenv("DB_HOST", "")
 DB_PORT = int(os.getenv("DB_PORT", "13729"))
 DB_NAME = os.getenv("DB_NAME", "comex")
 
@@ -46,7 +50,7 @@ for tabela in tabelas:
     query = f"SELECT * FROM {tabela}"
     df = pd.read_sql(query, conexao)
 
-    df.to_csv(f"../data/bronze/{tabela}.csv", index=False, encoding="utf-8-sig")
+    df.to_csv(BRONZE_DIR / f"{tabela}.csv", index=False, encoding="utf-8-sig")
 
 print("🚀 Extração finalizada!")
 conexao.close()

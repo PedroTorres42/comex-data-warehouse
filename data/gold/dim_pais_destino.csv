@@ -1,0 +1,41 @@
+sk_pais_destino,id_pais_destino,nome_pais_destino,codigo_iso_pais_destino,bloco_economico_pais_destino
+1,14,México,MEX,USMCA
+2,25,Emirados Árabes Unidos,ARE,Liga Árabe
+3,36,Tailândia,THA,ASEAN
+4,7,Itália,ITA,União Europeia
+5,18,Índia,IND,BRICS
+6,29,Nova Zelândia,NZL,APEC
+7,40,Nigéria,NGA,União Africana
+8,11,Bélgica,BEL,União Europeia
+9,22,Peru,PER,Comunidade Andina
+10,33,Dinamarca,DNK,União Europeia
+11,4,Uruguai,URY,Mercosul
+12,15,China,CHN,APEC
+13,21,Chile,CHL,Comunidade Andina
+14,32,Suécia,SWE,União Europeia
+15,3,Paraguai,PRY,Mercosul
+16,28,Austrália,AUS,APEC
+17,39,Malásia,MYS,ASEAN
+18,10,Países Baixos,NLD,União Europeia
+19,35,Singapura,SGP,ASEAN
+20,6,França,FRA,União Europeia
+21,17,Coreia do Sul,KOR,APEC
+22,2,Argentina,ARG,Mercosul
+23,13,Canadá,CAN,USMCA
+24,24,Bolívia,BOL,Comunidade Andina
+25,9,Portugal,PRT,União Europeia
+26,20,África do Sul,ZAF,BRICS
+27,31,Noruega,NOR,EFTA
+28,16,Japão,JPN,APEC
+29,27,Egito,EGY,Liga Árabe
+30,38,Indonésia,IDN,ASEAN
+31,23,Colômbia,COL,Comunidade Andina
+32,34,Turquia,TUR,
+33,5,Alemanha,DEU,União Europeia
+34,30,Suíça,CHE,EFTA
+35,1,Brasil,BRA,Mercosul
+36,12,Estados Unidos,USA,USMCA
+37,37,Vietnã,VNM,ASEAN
+38,8,Espanha,ESP,União Europeia
+39,19,Rússia,RUS,BRICS
+40,26,Arábia Saudita,SAU,Liga Árabe

@@ -1,0 +1,7 @@
+sk_transporte,id_transporte,descricao_transporte
+1,1,Marítimo
+2,2,Aéreo
+3,3,Rodoviário
+4,4,Ferroviário
+5,5,Multimodal
+6,6,Courier Internacional
