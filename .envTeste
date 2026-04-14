@@ -1,0 +1,24 @@
+# Exemplo de configuracao para o projeto
+# Este arquivo e apenas um template para o repositório.
+# O programa deve usar o .env real, nao este arquivo.
+
+# Banco de origem (extracao)
+EXTRACAO_DB_USER=seu_usuario_extracao
+EXTRACAO_DB_PASSWORD=sua_senha_extracao
+EXTRACAO_DB_HOST=seu-host-extracao.aivencloud.com
+EXTRACAO_DB_PORT=12345
+EXTRACAO_DB_NAME=seu_banco_extracao
+
+# Data Warehouse (carga)
+DW_DB_USER=seu_usuario_dw
+DW_DB_PASSWORD=sua_senha_dw
+DW_DB_HOST=seu-host-dw.aivencloud.com
+DW_DB_PORT=12345
+DW_DB_NAME=seu_banco_dw
+
+# Variaveis genericas usadas por scripts legados ou por execucao local
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+DB_HOST=seu-host.aivencloud.com
+DB_PORT=12345
+DB_NAME=seu_banco
