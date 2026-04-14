@@ -44,10 +44,8 @@ def _get_connection_kwargs(prefix):
         kwargs["ssl_verify_cert"] = True
     return kwargs
 
-# Criar pasta bronze
 BRONZE_DIR.mkdir(parents=True, exist_ok=True)
 
-# Credenciais via arquivo .env
 required_env = ["EXTRACAO_DB_USER", "EXTRACAO_DB_PASSWORD", "EXTRACAO_DB_HOST", "EXTRACAO_DB_PORT", "EXTRACAO_DB_NAME"]
 missing_env = [name for name in required_env if not _get_env(name)]
 if missing_env:
@@ -55,12 +53,10 @@ if missing_env:
         "Defina EXTRACAO_DB_USER, EXTRACAO_DB_PASSWORD, EXTRACAO_DB_HOST, EXTRACAO_DB_PORT e EXTRACAO_DB_NAME no arquivo .env antes de executar a extracao."
     )
 
-# Conexão
 conexao = mysql.connector.connect(**_get_connection_kwargs("EXTRACAO"))
 
-print("✅ Conectado ao banco!")
+print("Conectado ao banco.")
 
-# Tabelas
 tabelas = [
     "blocos_economicos",
     "cambios",
@@ -73,14 +69,13 @@ tabelas = [
     "transportes"
 ]
 
-# Extração
 for tabela in tabelas:
-    print(f"📥 Extraindo {tabela}...")
+    print(f"Extraindo {tabela}...")
 
     query = f"SELECT * FROM {tabela}"
     df = pd.read_sql(query, conexao)
 
     df.to_csv(BRONZE_DIR / f"{tabela}.csv", index=False, encoding="utf-8-sig")
 
-print("🚀 Extração finalizada!")
+print("Extracao finalizada.")
 conexao.close()

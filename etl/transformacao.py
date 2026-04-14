@@ -215,7 +215,7 @@ def transform_bronze_to_dw_frames(bronze_data):
     fato = fato.dropna(subset=fk_cols)
     discarded = before - len(fato)
     if discarded > 0:
-        print(f"⚠️ {discarded} transações foram descartadas por falta de chaves de dimensão.")
+        print(f"Aviso: {discarded} transacoes foram descartadas por falta de chaves de dimensao.")
 
     fato = fato[
         [
@@ -278,12 +278,12 @@ def transform_bronze_to_dw_frames(bronze_data):
 
 
 def main():
-    print("📥 Carregando arquivos da camada bronze...")
+    print("Carregando arquivos da camada bronze...")
     bronze_data = load_bronze_data()
-    print("🧹 Transformando dados para o formato do DW...")
+    print("Transformando dados para o formato do DW...")
     dw_frames = transform_bronze_to_dw_frames(bronze_data)
     print(
-        "✅ Transformação concluída! Tabelas prontas para carga: "
+        "Transformacao concluida. Tabelas prontas para carga: "
         + ", ".join(dw_frames.keys())
     )
 
