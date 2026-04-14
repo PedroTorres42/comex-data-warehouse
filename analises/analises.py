@@ -127,6 +127,12 @@ def _format_moeda(valor):
   return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def _apply_spaced_layout(hspace=0.45, pad=1.2, top=0.95, bottom=0.08, left=0.08, right=0.97):
+  fig = plt.gcf()
+  fig.tight_layout(pad=pad)
+  fig.subplots_adjust(hspace=hspace, top=top, bottom=bottom, left=left, right=right)
+
+
 def visao_temporal(conexao):
   df_mes = _query_df(
     conexao,
@@ -159,34 +165,32 @@ def visao_temporal(conexao):
     """,
   )
 
-  plt.figure(figsize=(16, 10))
+  plt.figure(figsize=(16, 13))
 
   ax1 = plt.subplot(3, 1, 1)
   labels_mes = df_mes.apply(lambda r: f"{int(r['ano'])}-{int(r['mes']):02d}", axis=1)
   ax1.plot(labels_mes, df_mes["valor_total"], marker="o")
-  ax1.set_title("Evolucao Mensal do Valor Financeiro")
-  ax1.set_xlabel("Periodo (Ano-Mes)")
+  ax1.set_title("Evolucao Mensal do Valor Financeiro", pad=12)
   ax1.set_ylabel("Valor Total Movimentado")
   _set_value_axis(ax1, df_mes["valor_total"], axis="y")
-  ax1.tick_params(axis="x", rotation=45)
+  ax1.tick_params(axis="x", labelbottom=False)
 
   ax2 = plt.subplot(3, 1, 2)
   labels_tri = df_tri.apply(lambda r: f"{int(r['ano'])}-T{int(r['trimestre'])}", axis=1)
   ax2.bar(labels_tri, df_tri["valor_total"])
-  ax2.set_title("Evolucao Trimestral do Valor Financeiro")
-  ax2.set_xlabel("Periodo (Ano-Trimestre)")
+  ax2.set_title("Evolucao Trimestral do Valor Financeiro", pad=12)
   ax2.set_ylabel("Valor Total Movimentado")
   _set_value_axis(ax2, df_tri["valor_total"], axis="y")
-  ax2.tick_params(axis="x", rotation=45)
+  ax2.tick_params(axis="x", labelbottom=False)
 
   ax3 = plt.subplot(3, 1, 3)
   ax3.plot(df_ano["ano"].astype(str), df_ano["valor_total"], marker="o", linewidth=2)
-  ax3.set_title("Evolucao Anual do Valor Financeiro")
+  ax3.set_title("Evolucao Anual do Valor Financeiro", pad=12)
   ax3.set_xlabel("Ano")
   ax3.set_ylabel("Valor Total Movimentado")
   _set_value_axis(ax3, df_ano["valor_total"], axis="y")
 
-  plt.tight_layout()
+  _apply_spaced_layout(hspace=0.62, pad=1.3, top=0.95, bottom=0.08)
   plt.show()
 
 
@@ -233,8 +237,8 @@ def visao_paises(conexao):
 
   ax1_pct = ax1.twiny()
   ax1_pct.set_xlim(0, 100)
-  ax1_pct.set_xlabel("Participacao no Top 10 de Origem (%)")
   ax1_pct.plot(origem["participacao_pct"], origem["pais"], alpha=0)
+  ax1_pct.set_xticks([])
 
   ax2 = plt.subplot(2, 1, 2)
   ax2.barh(destino["pais"], destino["valor_total"], color="orange")
@@ -248,10 +252,10 @@ def visao_paises(conexao):
 
   ax2_pct = ax2.twiny()
   ax2_pct.set_xlim(0, 100)
-  ax2_pct.set_xlabel("Participacao no Top 10 de Destino (%)")
   ax2_pct.plot(destino["participacao_pct"], destino["pais"], alpha=0)
+  ax2_pct.set_xticks([])
 
-  plt.tight_layout()
+  _apply_spaced_layout(hspace=0.5, pad=1.4, top=0.94, bottom=0.08)
   plt.show()
 
 
@@ -282,7 +286,7 @@ def visao_blocos(conexao):
   plt.ylabel("Valor Total Movimentado")
   _set_value_axis(plt.gca(), blocos["valor_total"], axis="y")
   plt.xticks(rotation=45, ha="right")
-  plt.tight_layout()
+  _apply_spaced_layout(hspace=0.3, pad=1.2, top=0.92, bottom=0.14)
   plt.show()
 
 
@@ -332,8 +336,8 @@ def visao_produto_categoria(conexao):
 
   ax1_pct = ax1.twiny()
   ax1_pct.set_xlim(0, 100)
-  ax1_pct.set_xlabel("Participacao no Top 10 de Produtos (%)")
   ax1_pct.plot(produtos["participacao_pct"], produtos["descricao_produto"], alpha=0)
+  ax1_pct.set_xticks([])
 
   ax2 = plt.subplot(2, 1, 2)
   ax2.barh(categorias["descricao_categoria_produto"], categorias["quantidade_total"], color="seagreen")
@@ -347,10 +351,10 @@ def visao_produto_categoria(conexao):
 
   ax2_pct = ax2.twiny()
   ax2_pct.set_xlim(0, 100)
-  ax2_pct.set_xlabel("Participacao por Categoria (%)")
   ax2_pct.plot(categorias["participacao_pct"], categorias["descricao_categoria_produto"], alpha=0)
+  ax2_pct.set_xticks([])
 
-  plt.tight_layout()
+  _apply_spaced_layout(hspace=0.5, pad=1.4, top=0.94, bottom=0.08)
   plt.show()
 
 
@@ -387,12 +391,11 @@ def visao_cambial(conexao):
   ax1 = plt.subplot(3, 1, 1)
   ax1.bar(moedas["moeda"], moedas["valor_total"], color="crimson", alpha=0.8, label="Valor Total")
   ax1.set_title("Impacto Cambial por Moeda")
-  ax1.set_xlabel("Moeda")
   ax1.set_ylabel("Valor Total Movimentado")
   _set_value_axis(ax1, moedas["valor_total"], axis="y")
   max_valor = float(moedas["valor_total"].max()) if len(moedas) else 1.0
   ax1.set_ylim(0, max_valor * 1.35)
-  ax1.tick_params(axis="x", rotation=35)
+  ax1.tick_params(axis="x", rotation=28)
   ax1.grid(axis="y", linestyle="--", alpha=0.4)
 
   ax1_taxa = ax1.twinx()
@@ -420,7 +423,6 @@ def visao_cambial(conexao):
   labels = tempo_cambio.apply(lambda r: f"{int(r['ano'])}-{int(r['mes']):02d}", axis=1)
   ax2.plot(labels, tempo_cambio["taxa_media"], marker="o", color="royalblue")
   ax2.set_title("Evolucao Mensal da Taxa Cambial Media")
-  ax2.set_xlabel("Periodo (Ano-Mes)")
   ax2.set_ylabel("Taxa Cambial Media")
   ax2.tick_params(axis="x", rotation=45)
   ax2.grid(axis="y", linestyle="--", alpha=0.4)
@@ -434,7 +436,7 @@ def visao_cambial(conexao):
   ax3.tick_params(axis="x", rotation=45)
   ax3.grid(axis="y", linestyle="--", alpha=0.4)
 
-  plt.subplots_adjust(hspace=0.85, top=0.95, bottom=0.08)
+  _apply_spaced_layout(hspace=1.15, pad=1.4, top=0.95, bottom=0.08)
   plt.show()
 
 
@@ -523,9 +525,9 @@ def visao_executiva(conexao):
   _set_comparative_axis(ax_rank, top_paises["valor_total"], axis="x")
   ax_rank.invert_yaxis()
   ax_rank.grid(axis="x", linestyle="--", alpha=0.35)
-  for i, row in top_paises.reset_index(drop=True).iterrows():
+  for i, row in enumerate(top_paises.reset_index(drop=True).to_dict("records")):
     label = f"{_format_valor_eixo(row['valor_total'], None)} ({row['participacao_pct']:.1f}%)"
-    ax_rank.text(float(row["valor_total"]) * 1.005, i, label, va="center", fontsize=9, color="#2f3b52")
+    ax_rank.text(float(row["valor_total"]) * 1.005, float(i), label, va="center", fontsize=9, color="#2f3b52")
 
   ax_trend = fig.add_subplot(gs[1:, 2:])
   ax_trend.plot(serie_mensal["periodo"], serie_mensal["valor_total"], marker="o", linewidth=2.3, color="#1f5f8b")
