@@ -33,10 +33,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--analise-opcao",
-        default="6",
+        default=None,
         help=(
             "Opcao do menu de analises para executar automaticamente no fim. "
-            "Use 6 para visao executiva (padrao), ou informe 1-6."
+            "Informe 1-6 para executar automaticamente, ou nao passe nada para modo interativo."
         ),
     )
     parser.add_argument(
@@ -57,10 +57,14 @@ def main() -> None:
     if args.analise_interativa:
         run_step("Analise (menu interativo)", "analises/analises.py")
     else:
-        selected_option = str(args.analise_opcao).strip()
-        if selected_option not in {"1", "2", "3", "4", "5", "6"}:
-            raise ValueError("A opcao de analise deve ser um numero entre 1 e 6.")
-        run_step("Analise", "analises/analises.py", stdin_text=f"{selected_option}\n0\n")
+        selected_option = args.analise_opcao
+        if selected_option is None:
+            run_step("Analise", "analises/analises.py")
+        else:
+            selected_option = str(selected_option).strip()
+            if selected_option not in {"1", "2", "3", "4", "5", "6"}:
+                raise ValueError("A opcao de analise deve ser um numero entre 1 e 6.")
+            run_step("Analise", "analises/analises.py", stdin_text=f"{selected_option}\n0\n")
 
     print("\nPipeline finalizado com sucesso.")
 
