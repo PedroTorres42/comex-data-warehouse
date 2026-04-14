@@ -1,3 +1,6 @@
+-- ==============================
+-- DIMENSÃO TEMPO
+-- ==============================
 CREATE TABLE dim_tempo (
     sk_tempo INT PRIMARY KEY,
     data_referencia DATE NOT NULL,
@@ -8,6 +11,9 @@ CREATE TABLE dim_tempo (
     ano INT NOT NULL
 );
 
+-- ==============================
+-- DIMENSÃO PAÍS ORIGEM
+-- ==============================
 CREATE TABLE dim_pais_origem (
     sk_pais_origem INT PRIMARY KEY,
     id_pais_origem INT NOT NULL,
@@ -16,6 +22,9 @@ CREATE TABLE dim_pais_origem (
     bloco_economico_pais_origem VARCHAR(100)
 );
 
+-- ==============================
+-- DIMENSÃO PAÍS DESTINO
+-- ==============================
 CREATE TABLE dim_pais_destino (
     sk_pais_destino INT PRIMARY KEY,
     id_pais_destino INT NOT NULL,
@@ -24,20 +33,28 @@ CREATE TABLE dim_pais_destino (
     bloco_economico_pais_destino VARCHAR(100)
 );
 
+-- ==============================
+-- DIMENSÃO PRODUTO (CORRIGIDA)
+-- ==============================
 CREATE TABLE dim_produto (
     sk_produto INT PRIMARY KEY,
     id_produto INT NOT NULL,
     descricao_produto VARCHAR(255) NOT NULL,
-    codigo_ncm_produto INT,
-    categoria_produto VARCHAR(100)
+    codigo_ncm_produto INT
 );
 
+-- ==============================
+-- DIMENSÃO CATEGORIA PRODUTO
+-- ==============================
 CREATE TABLE dim_categoria_produto (
     sk_categoria_produto INT PRIMARY KEY,
     id_categoria_produto INT NOT NULL,
     descricao_categoria_produto VARCHAR(100) NOT NULL
 );
 
+-- ==============================
+-- DIMENSÃO MOEDA ORIGEM
+-- ==============================
 CREATE TABLE dim_moeda_origem (
     sk_moeda_origem INT PRIMARY KEY,
     id_moeda_origem INT NOT NULL,
@@ -45,6 +62,9 @@ CREATE TABLE dim_moeda_origem (
     pais_moeda_origem VARCHAR(100) NOT NULL
 );
 
+-- ==============================
+-- DIMENSÃO MOEDA DESTINO
+-- ==============================
 CREATE TABLE dim_moeda_destino (
     sk_moeda_destino INT PRIMARY KEY,
     id_moeda_destino INT NOT NULL,
@@ -52,25 +72,37 @@ CREATE TABLE dim_moeda_destino (
     pais_moeda_destino VARCHAR(100) NOT NULL
 );
 
+-- ==============================
+-- DIMENSÃO TIPO TRANSAÇÃO
+-- ==============================
 CREATE TABLE dim_tipo_transacao (
     sk_tipo_transacao INT PRIMARY KEY,
     id_tipo_transacao INT NOT NULL,
     descricao_tipo_transacao VARCHAR(100) NOT NULL
 );
 
+-- ==============================
+-- DIMENSÃO TRANSPORTE
+-- ==============================
 CREATE TABLE dim_transporte (
     sk_transporte INT PRIMARY KEY,
     id_transporte INT NOT NULL,
     descricao_transporte VARCHAR(100) NOT NULL
 );
 
+-- ==============================
+-- TABELA FATO (CORRIGIDA)
+-- ==============================
 CREATE TABLE fato_transacoes_internacionais (
-    id_transacao INT PRIMARY KEY,
+    sk_transacao INT PRIMARY KEY,
+    id_transacao INT,
+
     quantidade_transacionada INT NOT NULL,
     valor_monetario_transacao DECIMAL(15,2) NOT NULL,
     valor_convertido_transacao DECIMAL(15,2),
     taxa_cambio_transacao DECIMAL(10,4),
     custo_transporte_transacao DECIMAL(15,2),
+
     sk_tempo INT NOT NULL,
     sk_pais_origem INT NOT NULL,
     sk_pais_destino INT NOT NULL,
@@ -80,6 +112,7 @@ CREATE TABLE fato_transacoes_internacionais (
     sk_moeda_destino INT NOT NULL,
     sk_tipo_transacao INT NOT NULL,
     sk_transporte INT NOT NULL,
+
     FOREIGN KEY (sk_tempo) REFERENCES dim_tempo(sk_tempo),
     FOREIGN KEY (sk_pais_origem) REFERENCES dim_pais_origem(sk_pais_origem),
     FOREIGN KEY (sk_pais_destino) REFERENCES dim_pais_destino(sk_pais_destino),
