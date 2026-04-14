@@ -29,6 +29,19 @@ def _month_name_pt(month):
     return month_map.get(month, "DESCONHECIDO")
 
 
+def _weekday_name_pt(weekday):
+    weekday_map = {
+        0: "SEGUNDA-FEIRA",
+        1: "TERCA-FEIRA",
+        2: "QUARTA-FEIRA",
+        3: "QUINTA-FEIRA",
+        4: "SEXTA-FEIRA",
+        5: "SABADO",
+        6: "DOMINGO",
+    }
+    return weekday_map.get(weekday, "DESCONHECIDO")
+
+
 def load_bronze_data():
     """Carrega dados brutos da camada bronze."""
     transacoes = pd.read_csv(BRONZE_DIR / "transacoes.csv")
@@ -80,9 +93,15 @@ def transform_bronze_to_dw_frames(bronze_data):
             "cambio_id",
         ]
     )
+    transacoes["valor_monetario"] = pd.to_numeric(transacoes["valor_monetario"], errors="coerce")
+    transacoes["quantidade"] = pd.to_numeric(transacoes["quantidade"], errors="coerce")
     transacoes = transacoes[transacoes["valor_monetario"] > 0]
     transacoes = transacoes[transacoes["quantidade"] > 0]
-    cambios["data"] = pd.to_datetime(cambios["data"])
+    cambios["data"] = pd.to_datetime(cambios["data"], errors="coerce")
+    cambios["taxa_cambio"] = pd.to_numeric(cambios["taxa_cambio"], errors="coerce")
+    cambios = cambios.dropna(subset=["data", "taxa_cambio"])
+    cambios = cambios[cambios["taxa_cambio"] > 0]
+    cambios = cambios.drop_duplicates(subset=["id"])
 
     paises_enriquecido = paises.merge(
         blocos_economicos.rename(columns={"id": "bloco_id_join", "nome": "bloco_nome"}),
@@ -94,11 +113,13 @@ def transform_bronze_to_dw_frames(bronze_data):
     dim_tempo = cambios[["data"]].drop_duplicates().sort_values("data").reset_index(drop=True)
     dim_tempo["sk_tempo"] = dim_tempo.index + 1
     dim_tempo["data_referencia"] = dim_tempo["data"].dt.date
-    dim_tempo["dia"] = dim_tempo["data"].dt.day
-    dim_tempo["mes"] = dim_tempo["data"].dt.month
-    dim_tempo["nome_mes"] = dim_tempo["mes"].map(_month_name_pt)
-    dim_tempo["trimestre"] = dim_tempo["data"].dt.quarter
     dim_tempo["ano"] = dim_tempo["data"].dt.year
+    dim_tempo["mes"] = dim_tempo["data"].dt.month
+    dim_tempo["dia"] = dim_tempo["data"].dt.day
+    dim_tempo["trimestre"] = dim_tempo["data"].dt.quarter
+    dim_tempo["semestre"] = ((dim_tempo["mes"] - 1) // 6) + 1
+    dim_tempo["nome_do_mes"] = dim_tempo["mes"].map(_month_name_pt)
+    dim_tempo["dia_da_semana"] = dim_tempo["data"].dt.dayofweek.map(_weekday_name_pt)
 
     base_pais = paises_enriquecido[["id", "nome", "codigo_iso", "bloco_nome"]].drop_duplicates().reset_index(drop=True)
     dim_pais_origem = base_pais.copy()
@@ -175,6 +196,11 @@ def transform_bronze_to_dw_frames(bronze_data):
         }
     )
     fato = fato.merge(cambios_fact, on="cambio_id", how="left")
+    before_cambio_validation = len(fato)
+    fato = fato.dropna(subset=["data", "taxa_cambio"])
+    discarded_cambios = before_cambio_validation - len(fato)
+    if discarded_cambios > 0:
+        print(f"{discarded_cambios} transacoes foram descartadas por cambio ausente ou inconsistente.")
     fato["valor_convertido_transacao"] = fato["valor_monetario_transacao"] * fato["taxa_cambio"]
     fato["custo_transporte_transacao"] = 0.0
 
@@ -215,7 +241,7 @@ def transform_bronze_to_dw_frames(bronze_data):
     fato = fato.dropna(subset=fk_cols)
     discarded = before - len(fato)
     if discarded > 0:
-        print(f"⚠️ {discarded} transações foram descartadas por falta de chaves de dimensão.")
+        print(f"{discarded} transacoes foram descartadas por falta de chaves de dimensao.")
 
     fato = fato[
         [
@@ -278,12 +304,12 @@ def transform_bronze_to_dw_frames(bronze_data):
 
 
 def main():
-    print("📥 Carregando arquivos da camada bronze...")
+    print("Carregando arquivos da camada bronze...")
     bronze_data = load_bronze_data()
-    print("🧹 Transformando dados para o formato do DW...")
+    print("Transformando dados para o formato do DW...")
     dw_frames = transform_bronze_to_dw_frames(bronze_data)
     print(
-        "✅ Transformação concluída! Tabelas prontas para carga: "
+        "Transformacao concluida. Tabelas prontas para carga: "
         + ", ".join(dw_frames.keys())
     )
 

@@ -4,11 +4,13 @@
 CREATE TABLE dim_tempo (
     sk_tempo INT PRIMARY KEY,
     data_referencia DATE NOT NULL,
-    dia INT NOT NULL,
+    ano INT NOT NULL,
     mes INT NOT NULL,
-    nome_mes VARCHAR(20) NOT NULL,
+    dia INT NOT NULL,
     trimestre INT NOT NULL,
-    ano INT NOT NULL
+    semestre INT NOT NULL,
+    nome_do_mes VARCHAR(20) NOT NULL,
+    dia_da_semana VARCHAR(20) NOT NULL
 );
 
 -- ==============================
@@ -34,7 +36,7 @@ CREATE TABLE dim_pais_destino (
 );
 
 -- ==============================
--- DIMENSÃO PRODUTO (CORRIGIDA)
+-- DIMENSÃO PRODUTO
 -- ==============================
 CREATE TABLE dim_produto (
     sk_produto INT PRIMARY KEY,
