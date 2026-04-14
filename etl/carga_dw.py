@@ -119,7 +119,17 @@ def main():
     _insert_df(
         cursor,
         "dim_tempo",
-        ["sk_tempo", "data_referencia", "dia", "mes", "nome_mes", "trimestre", "ano"],
+        [
+            "sk_tempo",
+            "data_referencia",
+            "ano",
+            "mes",
+            "dia",
+            "trimestre",
+            "semestre",
+            "nome_do_mes",
+            "dia_da_semana",
+        ],
         dw_frames["dim_tempo"],
     )
     _insert_df(
@@ -212,9 +222,9 @@ def main():
     conexao.commit()
     cursor.close()
     conexao.close()
-    print("✅ Carga no DW concluída com sucesso!")
+    print("Carga no DW concluida com sucesso.")
 
 
 if __name__ == "__main__":
-    print("ℹ️ Executando carga do DW a partir das transformações da camada bronze.")
+    print("Executando carga do DW a partir das transformacoes da camada bronze.")
     main()

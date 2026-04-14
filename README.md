@@ -116,6 +116,8 @@ python main.py --analise-opcao 6
 
 Opções de análise: `1` a `6`.
 
+Sem `--analise-opcao`, o `main.py` abre a análise em modo interativo e aguarda sua digitação.
+
 ### Abrir menu interativo de análise no final do pipeline
 
 ```bash
@@ -129,6 +131,33 @@ python etl/extracao.py
 python etl/transformacao.py
 python etl/carga_dw.py
 python analises/analises.py
+```
+
+### Carga incremental no banco de origem (sem recriar tabelas)
+
+Para inserir novos dados a partir de CSV no banco de origem sem `DROP TABLE`:
+
+```bash
+python etl/carga_origem_incremental.py
+```
+
+Opções úteis:
+
+```bash
+# apenas inserir novos (ignora duplicados)
+python etl/carga_origem_incremental.py --mode insert-ignore
+
+# processar só algumas tabelas
+python etl/carga_origem_incremental.py --tables cambios transacoes
+
+# usar outro diretório de CSV (ex.: amostras)
+python etl/carga_origem_incremental.py --csv-dir data/bronze_sample
+```
+
+## Exemplo de inserção segura no CSV(transacoes.csv)
+
+```csv
+100001,2,1,5,1,125000.50,80,1,1
 ```
 
 ## Observações

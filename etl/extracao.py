@@ -58,7 +58,7 @@ if missing_env:
 # Conexão
 conexao = mysql.connector.connect(**_get_connection_kwargs("EXTRACAO"))
 
-print("✅ Conectado ao banco!")
+print("Conectado ao banco.")
 
 # Tabelas
 tabelas = [
@@ -75,12 +75,12 @@ tabelas = [
 
 # Extração
 for tabela in tabelas:
-    print(f"📥 Extraindo {tabela}...")
+    print(f"Extraindo {tabela}...")
 
     query = f"SELECT * FROM {tabela}"
     df = pd.read_sql(query, conexao)
 
     df.to_csv(BRONZE_DIR / f"{tabela}.csv", index=False, encoding="utf-8-sig")
 
-print("🚀 Extração finalizada!")
+print("Extracao finalizada.")
 conexao.close()
