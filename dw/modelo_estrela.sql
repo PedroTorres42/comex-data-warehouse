@@ -123,3 +123,36 @@ CREATE TABLE fato_transacoes_internacionais (
     FOREIGN KEY (sk_tipo_transacao) REFERENCES dim_tipo_transacao(sk_tipo_transacao),
     FOREIGN KEY (sk_transporte) REFERENCES dim_transporte(sk_transporte)
 );
+
+-- ==============================
+-- ÍNDICES PARA PERFORMANCE
+-- ==============================
+
+-- Dimensao tempo (usada em agrupamentos por ano/mes/trimestre)
+CREATE INDEX idx_dim_tempo_ano_mes ON dim_tempo (ano, mes);
+CREATE INDEX idx_dim_tempo_trimestre ON dim_tempo (ano, trimestre);
+
+-- Dimensoes de pais (usadas em agrupamentos por nome e bloco)
+CREATE INDEX idx_dim_pais_origem_nome ON dim_pais_origem (nome_pais_origem);
+CREATE INDEX idx_dim_pais_origem_bloco ON dim_pais_origem (bloco_economico_pais_origem);
+CREATE INDEX idx_dim_pais_destino_nome ON dim_pais_destino (nome_pais_destino);
+CREATE INDEX idx_dim_pais_destino_bloco ON dim_pais_destino (bloco_economico_pais_destino);
+
+-- Dimensoes de produto e categoria
+CREATE INDEX idx_dim_produto_descricao ON dim_produto (descricao_produto);
+CREATE INDEX idx_dim_categoria_descricao ON dim_categoria_produto (descricao_categoria_produto);
+
+-- Dimensao de moeda usada em visao cambial
+CREATE INDEX idx_dim_moeda_origem_descricao ON dim_moeda_origem (descricao_moeda_origem);
+
+-- Fato: chaves de junção e colunas usadas em filtros/ordenacoes analiticas
+CREATE INDEX idx_fato_sk_tempo ON fato_transacoes_internacionais (sk_tempo);
+CREATE INDEX idx_fato_sk_pais_origem ON fato_transacoes_internacionais (sk_pais_origem);
+CREATE INDEX idx_fato_sk_pais_destino ON fato_transacoes_internacionais (sk_pais_destino);
+CREATE INDEX idx_fato_sk_produto ON fato_transacoes_internacionais (sk_produto);
+CREATE INDEX idx_fato_sk_categoria_produto ON fato_transacoes_internacionais (sk_categoria_produto);
+CREATE INDEX idx_fato_sk_moeda_origem ON fato_transacoes_internacionais (sk_moeda_origem);
+CREATE INDEX idx_fato_sk_moeda_destino ON fato_transacoes_internacionais (sk_moeda_destino);
+CREATE INDEX idx_fato_sk_tipo_transacao ON fato_transacoes_internacionais (sk_tipo_transacao);
+CREATE INDEX idx_fato_sk_transporte ON fato_transacoes_internacionais (sk_transporte);
+CREATE INDEX idx_fato_id_transacao ON fato_transacoes_internacionais (id_transacao);
