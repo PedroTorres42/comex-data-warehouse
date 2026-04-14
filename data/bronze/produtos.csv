@@ -1,0 +1,41 @@
+﻿id,descricao,categoria_id,codigo_ncm
+1,Soja em grãos,8,12019000
+2,Milho em grãos,8,10059010
+3,Café não torrado,8,09011110
+4,Açúcar cristal,1,17019900
+5,Carne bovina congelada,1,02023000
+6,Frango congelado,1,02071400
+7,Celulose branqueada,6,47032100
+8,Minério de ferro,2,26011100
+9,Alumínio bruto,2,76011000
+10,Petróleo bruto,2,27090010
+11,Etanol,6,22071000
+12,Adubo NPK,6,31052000
+13,Polietileno,6,39012029
+14,Medicamento genérico,9,30049099
+15,Vacina veterinária,9,30023010
+16,Camisetas de algodão,7,61091000
+17,Tecidos sintéticos,7,54076100
+18,Calçados esportivos,7,64041100
+19,Notebook corporativo,3,84713012
+20,Servidor rack,3,84715010
+21,Smartphone,3,85171300
+22,Tablet,3,84713019
+23,Roteador industrial,3,85176259
+24,Sensor IoT,3,90318099
+25,Torno mecânico,4,84581199
+26,Trator agrícola,4,87019300
+27,Colheitadeira,4,84335100
+28,Empilhadeira,4,84272090
+29,Motor elétrico,4,85015210
+30,Peças automotivas,5,87089990
+31,Pneu radial,5,40111000
+32,Bateria automotiva,5,85071000
+33,Veículo utilitário,5,87042190
+34,Autopeça eletrônica,5,85371090
+35,Vinho tinto,10,22042100
+36,Cerveja artesanal,10,22030000
+37,Suco concentrado,10,20091900
+38,Chocolate em barra,1,18063210
+39,Arroz beneficiado,1,10063021
+40,Algodão em pluma,8,52010020

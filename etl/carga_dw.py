@@ -1,132 +1,220 @@
+from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
+
+import mysql.connector
 import pandas as pd
-import os
 
-# ==============================
-# 📁 Criar pasta GOLD
-# ==============================
-os.makedirs("../data/gold", exist_ok=True)
+from transformacao import load_bronze_data, transform_bronze_to_dw_frames
 
-# ==============================
-# 📥 Carregar dados da SILVER
-# ==============================
-df = pd.read_csv("../data/silver/dados_tratados.csv")
 
-# ==============================
-# 📅 DIMENSÃO TEMPO
-# ==============================
-df["data"] = pd.to_datetime(df["data"])
+BASE_DIR = Path(__file__).resolve().parent.parent
+DW_SQL_PATH = BASE_DIR / "dw" / "modelo_estrela.sql"
+ENV_PATH = BASE_DIR / ".env"
 
-dim_tempo = df[["data"]].drop_duplicates().reset_index(drop=True)
-dim_tempo["sk_tempo"] = dim_tempo.index + 1
 
-dim_tempo["dia"] = dim_tempo["data"].dt.day
-dim_tempo["mes"] = dim_tempo["data"].dt.month
-dim_tempo["nome_mes"] = dim_tempo["data"].dt.month_name()
-dim_tempo["trimestre"] = dim_tempo["data"].dt.quarter
-dim_tempo["ano"] = dim_tempo["data"].dt.year
+def _load_env_file(path):
+    values = {}
+    if not path.exists():
+        return values
 
-# ==============================
-# 🌍 DIMENSÃO PAÍS ORIGEM
-# ==============================
-dim_pais_origem = df[["id_pais_origem", "nome_pais_origem"]].drop_duplicates().reset_index(drop=True)
-dim_pais_origem["sk_pais_origem"] = dim_pais_origem.index + 1
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
 
-# ==============================
-# 🌍 DIMENSÃO PAÍS DESTINO
-# ==============================
-dim_pais_destino = df[["id_pais_destino", "nome_pais_destino"]].drop_duplicates().reset_index(drop=True)
-dim_pais_destino["sk_pais_destino"] = dim_pais_destino.index + 1
 
-# ==============================
-# 📦 DIMENSÃO PRODUTO
-# ==============================
-dim_produto = df[["id_produto", "descricao_produto"]].drop_duplicates().reset_index(drop=True)
-dim_produto["sk_produto"] = dim_produto.index + 1
+ENV_VALUES = _load_env_file(ENV_PATH)
 
-# ==============================
-# 🏷 DIMENSÃO CATEGORIA
-# ==============================
-dim_categoria = df[["id_categoria", "descricao_categoria"]].drop_duplicates().reset_index(drop=True)
-dim_categoria["sk_categoria_produto"] = dim_categoria.index + 1
 
-# ==============================
-# 💰 DIMENSÃO MOEDA ORIGEM
-# ==============================
-dim_moeda_origem = df[["id_moeda_origem", "descricao_moeda_origem"]].drop_duplicates().reset_index(drop=True)
-dim_moeda_origem["sk_moeda_origem"] = dim_moeda_origem.index + 1
+def _get_env(name, default=None):
+    return ENV_VALUES.get(name) or default
 
-# ==============================
-# 💰 DIMENSÃO MOEDA DESTINO
-# ==============================
-dim_moeda_destino = df[["id_moeda_destino", "descricao_moeda_destino"]].drop_duplicates().reset_index(drop=True)
-dim_moeda_destino["sk_moeda_destino"] = dim_moeda_destino.index + 1
 
-# ==============================
-# 🔄 DIMENSÃO TIPO TRANSACAO
-# ==============================
-dim_tipo = df[["id_tipo_transacao", "descricao_tipo_transacao"]].drop_duplicates().reset_index(drop=True)
-dim_tipo["sk_tipo_transacao"] = dim_tipo.index + 1
+def _parse_service_uri(service_uri):
+    parsed = urlparse(service_uri)
+    query = parse_qs(parsed.query)
+    kwargs = {
+        "host": parsed.hostname,
+        "port": parsed.port,
+        "user": unquote(parsed.username) if parsed.username else None,
+        "password": unquote(parsed.password) if parsed.password else None,
+        "database": parsed.path.lstrip("/") or None,
+    }
+    ssl_ca = query.get("ssl-ca", [None])[0]
+    if ssl_ca:
+        kwargs["ssl_ca"] = ssl_ca
+        kwargs["ssl_verify_cert"] = True
+    else:
+        kwargs["ssl_disabled"] = False
+        kwargs["ssl_verify_cert"] = False
+    return kwargs
 
-# ==============================
-# 🚚 DIMENSÃO TRANSPORTE
-# ==============================
-dim_transporte = df[["id_transporte", "descricao_transporte"]].drop_duplicates().reset_index(drop=True)
-dim_transporte["sk_transporte"] = dim_transporte.index + 1
 
-# ==============================
-# 🔗 CRIAR FATO COM SKs
-# ==============================
-fato = df.copy()
+def _get_connection_kwargs():
+    service_uri = _get_env("DW_DB_SERVICE_URI")
+    if not service_uri:
+        return None
+    return _parse_service_uri(service_uri)
 
-# JOINs
-fato = fato.merge(dim_tempo[["data", "sk_tempo"]], on="data", how="left")
 
-fato = fato.merge(dim_pais_origem, on=["id_pais_origem", "nome_pais_origem"], how="left")
-fato = fato.merge(dim_pais_destino, on=["id_pais_destino", "nome_pais_destino"], how="left")
+def _df_to_rows(df, columns):
+    subset = df[columns].astype(object)
+    subset = subset.where(pd.notnull(subset), None)
+    return [tuple(row) for row in subset.itertuples(index=False, name=None)]
 
-fato = fato.merge(dim_produto, on=["id_produto", "descricao_produto"], how="left")
-fato = fato.merge(dim_categoria, on=["id_categoria", "descricao_categoria"], how="left")
 
-fato = fato.merge(dim_moeda_origem, on=["id_moeda_origem", "descricao_moeda_origem"], how="left")
-fato = fato.merge(dim_moeda_destino, on=["id_moeda_destino", "descricao_moeda_destino"], how="left")
+def _execute_schema(cursor):
+    drop_order = [
+        "fato_transacoes_internacionais",
+        "dim_transporte",
+        "dim_tipo_transacao",
+        "dim_moeda_destino",
+        "dim_moeda_origem",
+        "dim_categoria_produto",
+        "dim_produto",
+        "dim_pais_destino",
+        "dim_pais_origem",
+        "dim_tempo",
+    ]
+    for table in drop_order:
+        cursor.execute(f"DROP TABLE IF EXISTS {table}")
 
-fato = fato.merge(dim_tipo, on=["id_tipo_transacao", "descricao_tipo_transacao"], how="left")
-fato = fato.merge(dim_transporte, on=["id_transporte", "descricao_transporte"], how="left")
+    statements = [stmt.strip() for stmt in DW_SQL_PATH.read_text(encoding="utf-8").split(";") if stmt.strip()]
+    for statement in statements:
+        cursor.execute(statement)
 
-# ==============================
-# ⭐ TABELA FATO FINAL
-# ==============================
-fato_final = fato[[
-    "id_transacao",
-    "quantidade",
-    "valor",
-    "valor_convertido",
-    "taxa_cambio",
-    "custo_transporte",
-    "sk_tempo",
-    "sk_pais_origem",
-    "sk_pais_destino",
-    "sk_produto",
-    "sk_categoria_produto",
-    "sk_moeda_origem",
-    "sk_moeda_destino",
-    "sk_tipo_transacao",
-    "sk_transporte"
-]]
 
-# ==============================
-# 💾 SALVAR GOLD
-# ==============================
-dim_tempo.to_csv("../data/gold/dim_tempo.csv", index=False)
-dim_pais_origem.to_csv("../data/gold/dim_pais_origem.csv", index=False)
-dim_pais_destino.to_csv("../data/gold/dim_pais_destino.csv", index=False)
-dim_produto.to_csv("../data/gold/dim_produto.csv", index=False)
-dim_categoria.to_csv("../data/gold/dim_categoria.csv", index=False)
-dim_moeda_origem.to_csv("../data/gold/dim_moeda_origem.csv", index=False)
-dim_moeda_destino.to_csv("../data/gold/dim_moeda_destino.csv", index=False)
-dim_tipo.to_csv("../data/gold/dim_tipo_transacao.csv", index=False)
-dim_transporte.to_csv("../data/gold/dim_transporte.csv", index=False)
+def _insert_df(cursor, table, columns, df):
+    if df.empty:
+        return
+    placeholders = ",".join(["%s"] * len(columns))
+    column_list = ",".join(columns)
+    sql = f"INSERT INTO {table} ({column_list}) VALUES ({placeholders})"
+    cursor.executemany(sql, _df_to_rows(df, columns))
 
-fato_final.to_csv("../data/gold/fato_transacoes.csv", index=False)
 
-print("🚀 Data Warehouse carregado com sucesso!")
+def main():
+    bronze_data = load_bronze_data()
+    dw_frames = transform_bronze_to_dw_frames(bronze_data)
+
+    service_uri = _get_env("DW_DB_SERVICE_URI")
+    if not service_uri:
+        raise ValueError("Defina DW_DB_SERVICE_URI no arquivo .env antes de executar a carga.")
+
+    connection_kwargs = _get_connection_kwargs()
+    if not connection_kwargs:
+        raise ValueError("Defina DW_DB_SERVICE_URI no arquivo .env antes de executar a carga.")
+
+    conexao = mysql.connector.connect(**connection_kwargs)
+    db_name = conexao.database
+    cursor = conexao.cursor()
+    if not db_name:
+        raise ValueError("O Service URI do DW precisa conter o nome do banco de dados no caminho da URI.")
+
+    _execute_schema(cursor)
+
+    _insert_df(
+        cursor,
+        "dim_tempo",
+        ["sk_tempo", "data_referencia", "dia", "mes", "nome_mes", "trimestre", "ano"],
+        dw_frames["dim_tempo"],
+    )
+    _insert_df(
+        cursor,
+        "dim_pais_origem",
+        [
+            "sk_pais_origem",
+            "id_pais_origem",
+            "nome_pais_origem",
+            "codigo_iso_pais_origem",
+            "bloco_economico_pais_origem",
+        ],
+        dw_frames["dim_pais_origem"],
+    )
+    _insert_df(
+        cursor,
+        "dim_pais_destino",
+        [
+            "sk_pais_destino",
+            "id_pais_destino",
+            "nome_pais_destino",
+            "codigo_iso_pais_destino",
+            "bloco_economico_pais_destino",
+        ],
+        dw_frames["dim_pais_destino"],
+    )
+    _insert_df(
+        cursor,
+        "dim_categoria_produto",
+        ["sk_categoria_produto", "id_categoria_produto", "descricao_categoria_produto"],
+        dw_frames["dim_categoria_produto"],
+    )
+    _insert_df(
+        cursor,
+        "dim_produto",
+        ["sk_produto", "id_produto", "descricao_produto", "codigo_ncm_produto"],
+        dw_frames["dim_produto"],
+    )
+    _insert_df(
+        cursor,
+        "dim_moeda_origem",
+        ["sk_moeda_origem", "id_moeda_origem", "descricao_moeda_origem", "pais_moeda_origem"],
+        dw_frames["dim_moeda_origem"],
+    )
+    _insert_df(
+        cursor,
+        "dim_moeda_destino",
+        ["sk_moeda_destino", "id_moeda_destino", "descricao_moeda_destino", "pais_moeda_destino"],
+        dw_frames["dim_moeda_destino"],
+    )
+    _insert_df(
+        cursor,
+        "dim_tipo_transacao",
+        ["sk_tipo_transacao", "id_tipo_transacao", "descricao_tipo_transacao"],
+        dw_frames["dim_tipo_transacao"],
+    )
+    _insert_df(
+        cursor,
+        "dim_transporte",
+        ["sk_transporte", "id_transporte", "descricao_transporte"],
+        dw_frames["dim_transporte"],
+    )
+    fato_df = dw_frames["fato_transacoes_internacionais"].copy().reset_index(drop=True)
+    fato_df.insert(0, "sk_transacao", fato_df.index + 1)
+
+    _insert_df(
+        cursor,
+        "fato_transacoes_internacionais",
+        [
+            "sk_transacao",
+            "id_transacao",
+            "quantidade_transacionada",
+            "valor_monetario_transacao",
+            "valor_convertido_transacao",
+            "taxa_cambio_transacao",
+            "custo_transporte_transacao",
+            "sk_tempo",
+            "sk_pais_origem",
+            "sk_pais_destino",
+            "sk_produto",
+            "sk_categoria_produto",
+            "sk_moeda_origem",
+            "sk_moeda_destino",
+            "sk_tipo_transacao",
+            "sk_transporte",
+        ],
+        fato_df,
+    )
+
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+    print("✅ Carga no DW concluída com sucesso!")
+
+
+if __name__ == "__main__":
+    print("ℹ️ Executando carga do DW a partir das transformações da camada bronze.")
+    main()
